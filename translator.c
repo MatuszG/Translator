@@ -12,14 +12,14 @@ struct Items {
 	struct Items* next;
 };
 
-struct Items *Head = NULL, *Wsk = NULL;		/* elements of a list */
-char type = '\0';							/* type of a variable */
-extern int LineCount;						/* line counter from file */
-sem_rec latter[10];							/* latter labels for nested while */
-int counter = 0;							/* counter for while (max. 10 nested while) */
-FILE* src3AC;								/* handle to file with 3AC code */
-int tempnum;								/* counter for temp variables */
-int labelnum;								/* counter for labels */
+struct Items *Head = NULL, *Wsk = NULL;		
+char type = '\0';							
+extern int LineCount;						
+sem_rec latter[10];							
+int counter = 0;							
+FILE* src3AC;								
+int tempnum;								
+int labelnum;								
 
 void emit1(char* str)
 {
@@ -44,23 +44,6 @@ void emit4(char* str1, char* str2, char* str3, char* str4)
 void emit5(char* str1, char* str2, char* str3, char* str4, char* str5)
 {
     fprintf(src3AC, "\t%s %s %s %s %s\n", str1, str2, str3, str4, str5);
-}
-
-void SemanticError(const char* message, const char* name) {//
-	DrawArrow();
-	printf("###### Semantic Error: %s - %s\n", message, name);
-	printf("###### Semantic Error: line %d or above\n", LineCount);
-	if (strstr(message, "different") != NULL) {
-		printf("See a symbol table below:\n");
-		ListSymbolTable();
-	}
-	exit(1);
-}
-
-void SemanticWarning(const char* message, const char* name) {//
-	DrawArrow();
-	printf("###### Semantic Warning: %s - %s\n", message, name);
-	printf("###### Semantic Warning: line %d or above\n", LineCount);
 }
 
 void gettemp(char* tempname) {
@@ -94,9 +77,6 @@ void GenInfix(sem_rec expr1, sem_rec op, sem_rec expr2, sem_rec* res) {
 		IdVal = LookUp(expr1.Lexeme);
 		HashItem* head = SymbolTable[IdVal];
 		while (strcmp(head->Name, expr1.Lexeme) != 0) head = head->Next;
-		if (strcmp(head->Type, "") == 0) SemanticError("variable not declared", head->Name);
-		else if (strcmp(head->Type, "ProgramName") == 0 || strcmp(head->Type, "keyword") == 0)
-			SemanticError("cannot be used as a variable", head->Name);
 		strcpy(type, head->Type);
 	}
 	if (isdigit(expr2.Lexeme[0])) {
@@ -107,18 +87,15 @@ void GenInfix(sem_rec expr1, sem_rec op, sem_rec expr2, sem_rec* res) {
 		IdVal = LookUp(expr2.Lexeme);
 		HashItem* head = SymbolTable[IdVal];
 		while (strcmp(head->Name, expr2.Lexeme) != 0) head = head->Next;
-		if (strcmp(head->Type, "") == 0) SemanticError("variable not declared", head->Name);
-		else if (strcmp(head->Type, "ProgramName") == 0 || strcmp(head->Type, "keyword") == 0)
-			SemanticError("cannot be used as a variable", head->Name);
 		strcpy(type2, head->Type);
 	}
-	if (strcmp(type, type2) != 0) {
-		IdString message;
-		strcpy(message, expr1.Lexeme);
-		strcat(message, " and ");
-		strcat(message, expr2.Lexeme);
-		SemanticError("different types of variables", message);
-	}
+	// if (strcmp(type, type2) != 0) {
+	// 	IdString message;
+	// 	strcpy(message, expr1.Lexeme);
+	// 	strcat(message, " and ");
+	// 	strcat(message, expr2.Lexeme);
+	// 	emanticError("different types of variables", message);
+	// }
 	if (strcmp(temp, "")) {
 		IdVal = LookUp(temp);
 		HashItem* head = SymbolTable[IdVal];
@@ -134,35 +111,29 @@ void AssignProc(sem_rec* term, sem_rec* expr) {
 	IdVal = LookUp(term->Lexeme);
 	HashItem* head = SymbolTable[IdVal];
 	while (strcmp(head->Name, term->Lexeme) != 0) head = head->Next;
-	if (strcmp(head->Type, "") == 0) SemanticError("variable not declared", head->Name);
-	else if (strcmp(head->Type, "ProgramName") == 0 || strcmp(head->Type, "keyword") == 0)
-		SemanticError("cannot be used as a variable", head->Name);
 	if (isdigit(expr->Lexeme[0])) {
 		IdString type;
 		if (strstr(expr->Lexeme, ".") != NULL) strcpy(type, "real");
 		else strcpy(type, "integer");
-		if (strcmp(head->Type, type) != 0) {
-			IdString message;
-			strcpy(message, head->Name);
-			strcat(message, " and ");
-			strcat(message, expr->Lexeme);
-			SemanticError("different types of variables", message);
-		}
+		// if (strcmp(head->Type, type) != 0) {
+		// 	IdString message;
+		// 	strcpy(message, head->Name);
+		// 	strcat(message, " and ");
+		// 	strcat(message, expr->Lexeme);
+		// 	SemanticError("different types of variables", message);
+		// }
 	}
 	else {
 		IdVal = LookUp(expr->Lexeme);
 		HashItem* head2 = SymbolTable[IdVal];
 		while (strcmp(head2->Name, expr->Lexeme) != 0) head2 = head2->Next;
-		if (strcmp(head2->Type, "") == 0) SemanticError("variable not declared", head2->Name);
-		else if (strcmp(head2->Type, "ProgramName") == 0 || strcmp(head2->Type, "keyword") == 0)
-			SemanticError("cannot be used as a variable", head2->Name);
-		if (strcmp(head->Type, head2->Type) != 0) {
-			IdString message;
-			strcpy(message, head->Name);
-			strcat(message, " and ");
-			strcat(message, head2->Name);
-			SemanticError("different types of variables", message);
-		}
+		// if (strcmp(head->Type, head2->Type) != 0) {
+		// 	IdString message;
+		// 	strcpy(message, head->Name);
+		// 	strcat(message, " and ");
+		// 	strcat(message, head2->Name);
+		// 	SemanticError("different types of variables", message);
+		// }
 	}
 	emit3(term->Lexeme, ":=", expr->Lexeme);
 }
@@ -173,9 +144,6 @@ void ReadProc() {
 		IdVal = LookUp(Wsk->item);
 		HashItem* head = SymbolTable[IdVal];
 		while (strcmp(head->Name, Wsk->item) != 0) head = head->Next;
-		if (strcmp(head->Type, "") == 0) SemanticError("variable not declared", head->Name);
-		else if (strcmp(head->Type, "ProgramName") == 0 || strcmp(head->Type, "keyword") == 0)
-			SemanticError("cannot be used as a variable", head->Name);
 		emit2("read", Wsk->item);
 		Wsk = Wsk->next;
 	}
@@ -193,9 +161,6 @@ void WriteEqualProc(sem_rec* expr) {
 	IdVal = LookUp(expr->Lexeme);
 	HashItem* head = SymbolTable[IdVal];
 	while (strcmp(head->Name, expr->Lexeme) != 0) head = head->Next;
-	if (strcmp(head->Type, "") == 0) SemanticError("variable not declared", head->Name);
-	else if (strcmp(head->Type, "ProgramName") == 0 || strcmp(head->Type, "keyword") == 0)
-		SemanticError("cannot be used as a variable", head->Name);
 	emit2("write", expr->Lexeme);
 }
 
@@ -240,9 +205,6 @@ void BooLessProc(sem_rec* exp1, sem_rec* op, sem_rec* exp2, sem_rec* cmd, sem_re
 		IdVal = LookUp(exp1->Lexeme);
 		HashItem* head = SymbolTable[IdVal];
 		while (strcmp(head->Name, exp1->Lexeme) != 0) head = head->Next;
-		if (strcmp(head->Type, "") == 0) SemanticError("variable not declared", head->Name);
-		else if (strcmp(head->Type, "ProgramName") == 0 || strcmp(head->Type, "keyword") == 0)
-			SemanticError("cannot be used as a variable", head->Name);
 		strcpy(type, head->Type);
 	}
 	if (isdigit(exp2->Lexeme[0])) {
@@ -253,18 +215,15 @@ void BooLessProc(sem_rec* exp1, sem_rec* op, sem_rec* exp2, sem_rec* cmd, sem_re
 		IdVal = LookUp(exp2->Lexeme);
 		HashItem* head = SymbolTable[IdVal];
 		while (strcmp(head->Name, exp2->Lexeme) != 0) head = head->Next;
-		if (strcmp(head->Type, "") == 0) SemanticError("variable not declared", head->Name);
-		else if (strcmp(head->Type, "ProgramName") == 0 || strcmp(head->Type, "keyword") == 0)
-			SemanticError("cannot be used as a variable", head->Name);
 		strcpy(type2, head->Type);
 	}
-	if (strcmp(type, type2) != 0) {
-		IdString message;
-		strcpy(message, exp1->Lexeme);
-		strcat(message, " and ");
-		strcat(message, exp2->Lexeme);
-		SemanticError("different types of variables", message);
-	}
+	// if (strcmp(type, type2) != 0) {
+	// 	IdString message;
+	// 	strcpy(message, exp1->Lexeme);
+	// 	strcat(message, " and ");
+	// 	strcat(message, exp2->Lexeme);
+	// 	SemanticError("different types of variables", message);
+	// }
 	if (strcmp(cmd->Lexeme, "if") == 0) {
 		getlabel(label);
 		strcpy(expr0.Lexeme, label);
@@ -363,7 +322,6 @@ void DeclProc(sem_rec* term) {
 		IdVal = LookUp(Wsk->item);
 		HashItem* head = SymbolTable[IdVal];
 		while (strcmp(head->Name, Wsk->item) != 0) head = head->Next;
-		if (strcmp(head->Type, "") != 0) SemanticError("variable redeclared", head->Name);
 		free(head->Type);
 		head->Type = (char*)malloc(strlen(term->Lexeme) + 1);
 		strcpy(head->Type, term->Lexeme);
